@@ -1,6 +1,5 @@
 #Create datagroup for whitelist
 tmsh create ltm data-group internal whitelist_sites type string records add { \
-    "www.ccass.com" { data "203.0.113.10" } \
     "www.google.com" { data "198.51.100.20" } \
     "www.example.com" { data "198.51.100.30" } \
 }
