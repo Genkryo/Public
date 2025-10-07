@@ -1,0 +1,57 @@
+#Create datagroup for whitelist
+tmsh create ltm data-group internal whitelist_sites type string records add { \
+    "www.ccass.com" { data "203.0.113.10" } \
+    "www.google.com" { data "198.51.100.20" } \
+    "www.example.com" { data "198.51.100.30" } \
+}
+
+#iRule to filter website from datagroup
+when CLIENT_DATA {
+    if {[TCP::payload] starts_with "CONNECT"} {
+        if {[regexp {CONNECT ([^:]+):([0-9]+)} [TCP::payload] -> host port]} {
+            set host [string tolower $host]
+            
+            # Liste des ports autorisés (ex: HTTPS standard + alternative)
+            set allowed_ports [list 443 8443]
+
+            # Vérifie si le host est dans le Data Group et le port autorisé
+            if {[class match -value $host equals whitelist_sites] && [lsearch -exact $allowed_ports $port] >= 0} {
+                # Récupère l'IP NAT correspondante
+                set dest_ip [class lookup $host whitelist_sites]
+
+                # Confirme la connexion au client
+                TCP::respond "HTTP/1.1 200 Connection established\r\n\r\n"
+                TCP::release
+
+                # Redirige vers l'IP NAT
+                node $dest_ip $port
+            } else {
+                log local0. "Proxy: site ou port refusé -> $host:$port"
+                TCP::respond "HTTP/1.1 403 Forbidden\r\n\r\n"
+                TCP::close
+            }
+        }
+    }
+}
+
+#Client ssl profile with CA to sign cert
+tmsh create ltm profile client-ssl clientssl_forwardproxy \
+    defaults-from clientssl \
+    cert-key-chain add { proxyCA { cert /Common/proxy_ca.crt key /Common/proxy_ca.key } } \
+    proxy-ca-cert /Common/proxy_ca.crt \
+    proxy-ca-key /Common/proxy_ca.key \
+    forward-proxy enabled \
+    forward-proxy-bypass disabled
+
+#Server ssl profile
+tmsh create ltm profile server-ssl serverssl_forwardproxy defaults-from serverssl
+
+#VS explicit forward proxy
+tmsh create ltm virtual vs_explicit_proxy {
+    destination 10.1.1.10:8080
+    ip-protocol tcp
+    source 0.0.0.0/0
+    profiles add { clientssl_forwardproxy { context clientside } serverssl_forwardproxy { context serverside } tcp }
+    source-address-translation { type automap }
+    rules { irule_whitelist_static }
+}
