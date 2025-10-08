@@ -34,12 +34,6 @@ authorityKeyIdentifier=keyid:always,issuer
 basicConstraints = critical,CA:true
 keyUsage = critical, digitalSignature, cRLSign, keyCertSign
 
-#Create datagroup for whitelist
-tmsh create ltm data-group internal whitelist_sites type string records add { \
-    "www.google.com" { data "198.51.100.20" } \
-    "www.example.com" { data "198.51.100.30" } \
-}
-
 # Generate CA
 openssl req -x509 -new -nodes \
   -config ca.conf \
@@ -50,6 +44,12 @@ openssl req -x509 -new -nodes \
 #Install CA on F5
 tmsh install sys crypto key proxy_ca.key from-local-file /var/tmp/proxy_ca.key
 tmsh install sys crypto cert proxy_ca.crt from-local-file /var/tmp/proxy_ca.crt
+
+#Create datagroup for whitelist
+tmsh create ltm data-group internal whitelist_sites type string records add { \
+    "www.google.com" { data "198.51.100.20" } \
+    "www.example.com" { data "198.51.100.30" } \
+}
 
 #iRule to filter website from datagroup
 when CLIENT_DATA {
