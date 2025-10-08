@@ -1,8 +1,52 @@
+# Generate private key for CA
+openssl genrsa -out proxy_ca.key 4096
+
+# Create self sign certificate
+openssl req -x509 -new -nodes \
+  -key proxy_ca.key \
+  -sha256 -days 3650 \
+  -out proxy_ca.crt \
+  -subj "/C=SG/ST=Singapore/L=Singapore/O=MyCompany/OU=Proxy/CN=MyCompany Proxy CA"
+
+#Verify it is a CA
+openssl x509 -in proxy_ca.crt -text -noout | grep -A2 "Basic Constraints"
+---> CA:TRUE
+
+# Create ca.conf
+[ req ]
+default_bits        = 4096
+prompt              = no
+default_md          = sha256
+x509_extensions     = v3_ca
+distinguished_name  = dn
+
+[ dn ]
+C  = SG
+ST = Singapore
+L  = Singapore
+O  = MyCompany
+OU = ForwardProxy
+CN = MyCompany Forward Proxy CA
+
+[ v3_ca ]
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer
+basicConstraints = critical,CA:true
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+
 #Create datagroup for whitelist
 tmsh create ltm data-group internal whitelist_sites type string records add { \
     "www.google.com" { data "198.51.100.20" } \
     "www.example.com" { data "198.51.100.30" } \
 }
+
+# Generate CA
+openssl req -x509 -new -nodes \
+  -config ca.conf \
+  -keyout proxy_ca.key \
+  -out proxy_ca.crt \
+  -days 3650
+
 
 #iRule to filter website from datagroup
 when CLIENT_DATA {
