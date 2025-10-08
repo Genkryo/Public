@@ -47,6 +47,9 @@ openssl req -x509 -new -nodes \
   -out proxy_ca.crt \
   -days 3650
 
+#Install CA on F5
+tmsh install sys crypto key proxy_ca.key from-local-file /var/tmp/proxy_ca.key
+tmsh install sys crypto cert proxy_ca.crt from-local-file /var/tmp/proxy_ca.crt
 
 #iRule to filter website from datagroup
 when CLIENT_DATA {
