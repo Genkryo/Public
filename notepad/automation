@@ -1,0 +1,82 @@
+Proposal: Automated DNS Resolution Monitoring for APAC Sites
+Objective
+
+Implement automated DNS resolution checks across all APAC locations to continuously monitor the health and topology of our G5 GTM infrastructure. This will enhance troubleshooting efficiency, improve visibility, and proactively detect DNS issues impacting users.
+
+Background & Problem
+
+Currently, when DNS resolution issues occur in APAC, troubleshooting relies on manual checks from individual locations or proxy tools.
+This approach:
+
+Delays root cause identification
+
+Lacks a centralized topology view
+
+Makes it harder to correlate issues related to GTM (Global Traffic Management) routing
+
+Increases operational workload during incidents
+
+Solution Overview
+
+Develop an automated system that periodically performs DNS queries from each APAC location against key services hosted behind our G5 GTM infrastructure.
+
+Key idea: Simulate local user DNS resolution continuously and collect results centrally.
+
+What the automation will do:
+
+Run scheduled DNS queries from each location (e.g., hourly)
+
+Capture GTM resolution details (IP, region pool, TTL, failure state)
+
+Report data to a central dashboard for live visibility
+
+Send alerts on abnormal behavior or unexpected routing
+
+Benefits
+Category	Value Delivered
+Service Reliability	Early detection of DNS/GTM routing failures
+Troubleshooting Speed	Immediate access to resolution patterns from all APAC sites
+Architecture Visibility	A clear topology overview of DNS resolution distribution
+Operational Efficiency	Reduces manual checks + quicker escalation decisions
+Scope
+
+Initial deployment in APAC region
+
+Include all critical internal & customer-facing endpoints behind GTM
+
+Output: Dashboard (Grafana / Splunk / PowerBI) + alerting via Ops channels (Slack/Teams)
+
+Technical Approach (High Level)
+
+Use small probe scripts deployed in each location (e.g., via existing monitoring agents/Jumphosts)
+
+Perform DNS lookups via local resolvers
+
+Store results in central DB/log analytics pipeline
+
+Visualize results in monitoring dashboard
+
+Define thresholds & alerting logic
+
+Success Criteria
+
+✅ Near real-time visibility into DNS routing across APAC
+✅ Reduction in time to diagnose DNS/GTM incidents
+✅ Ability to detect routing anomalies automatically
+
+Dependencies / Collaboration
+
+Coordination with Network Ops for endpoint list & location coverage
+
+Monitoring/Observability team for dashboard integration
+
+Alignment with GTM architecture standards
+
+Next Steps
+Step	Owner	Timeline
+Requirements & endpoints list	Network + DNS teams	2 weeks
+PoC in 2–3 APAC sites	Platform/Automation	4 weeks
+Rollout across APAC	TBD	Q2 target
+Ask
+
+Approval to launch a PoC and assign minimal engineering time to scope and automate DNS checks across APAC.
