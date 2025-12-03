@@ -1,0 +1,29 @@
+e message FTP: “Consider using PASV” signifie que le serveur FTP te recommande d’utiliser le mode passif (PASV) au lieu du mode actif (PORT/Active Mode) pour établir la connexion de données.
+
+🔍 Pourquoi ce message apparaît ?
+
+En FTP, il y a deux connexions :
+
+La connexion de commande (connexion principale)
+
+La connexion de données (utilisée pour les transferts)
+
+En mode actif, c’est le serveur FTP qui essaie de se connecter au client sur un port ouvert.
+➡️ Problème : Si ton client est derrière un pare-feu, NAT ou routeur, la connexion entrante sera souvent bloquée.
+
+🟦 Mode passif (PASV)
+
+En mode passif, c’est le client qui va ouvrir la connexion de données au serveur.
+➡️ Cela évite les blocages réseau.
+
+Le serveur te recommande donc PASV parce que :
+
+Tes transferts échouent en mode actif
+
+Une règle firewall/NAT empêche la connexion entrante
+
+Le serveur est configuré pour fonctionner principalement en passif
+
+🎯 Solution
+
+Active le mode PASV dans ton client FTP
